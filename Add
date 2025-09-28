@@ -12,3 +12,13 @@ task.spawn(function()
         task.wait(60)
     end
 end)
+local obj = game.Workspace
+
+-- เช็คว่ามี Attribute ชื่อ LogLevelClient อยู่ไหม
+if obj:GetAttribute("LogLevelClient") ~= nil then
+    -- ลบ Attribute โดยการ set ค่าเป็น nil
+    obj:SetAttribute("LogLevelClient", nil)
+    print("ลบ Attribute LogLevelClient แล้ว")
+else
+    print("ไม่พบ Attribute LogLevelClient")
+end
