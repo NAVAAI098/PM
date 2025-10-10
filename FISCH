@@ -1,6 +1,6 @@
 -- ส่วนบนสุดหลังจาก game:IsLoaded()
 repeat task.wait(5) until game:IsLoaded()
-
+repeat task.wait(1) until Workspace:FindFirstChild("PlayerStats") and Workspace.PlayerStats:FindFirstChild(Players.LocalPlayer.Name)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
