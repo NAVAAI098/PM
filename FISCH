@@ -1,6 +1,7 @@
--- ส่วนบนสุดหลังจาก game:IsLoaded()
-repeat task.wait(5) until game:IsLoaded()
-repeat task.wait(1) until Workspace:FindFirstChild("PlayerStats") and Workspace.PlayerStats:FindFirstChild(Players.LocalPlayer.Name)
+-- ✅ โหลดทุกอย่างให้ครบก่อนเริ่มสคริปต์
+repeat task.wait(1) until game:IsLoaded()
+
+-- ✅ โหลดบริการหลัก
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -8,12 +9,34 @@ local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local GuiService = game:GetService("GuiService")
 
+-- ✅ โหลด Player
 local LocalPlayer = Players.LocalPlayer
+repeat task.wait(0.5) until LocalPlayer and LocalPlayer.Name ~= nil
 local playerName = LocalPlayer.Name
-local playerStats = Workspace:WaitForChild("PlayerStats")[playerName]
 
-local RemoteEvent = ReplicatedStorage:WaitForChild("packages"):WaitForChild("Net"):WaitForChild("RE/SpearFishing/Minigame")
-local SpearfishingFolder = Workspace:WaitForChild("Spearfishing Water")
+-- ✅ รอจนกว่าจะมี PlayerStats และของผู้เล่นเราปรากฏในนั้นจริง
+repeat task.wait(1)
+until Workspace:FindFirstChild("PlayerStats")
+   and Workspace.PlayerStats:FindFirstChild(playerName)
+
+local playerStats = Workspace.PlayerStats[playerName]
+
+-- ✅ รอ ReplicatedStorage ทั้งหมด
+repeat task.wait(1)
+until ReplicatedStorage:FindFirstChild("packages")
+   and ReplicatedStorage.packages:FindFirstChild("Net")
+   and ReplicatedStorage.packages.Net:FindFirstChild("RE/SpearFishing/Minigame")
+
+local RemoteEvent = ReplicatedStorage.packages.Net["RE/SpearFishing/Minigame"]
+
+-- ✅ รอโฟลเดอร์ Spearfishing Water ให้แน่ใจว่ามีจริงใน workspace
+repeat task.wait(1)
+until Workspace:FindFirstChild("Spearfishing Water")
+
+local SpearfishingFolder = Workspace["Spearfishing Water"]
+
+print("✅ ทุกอย่างโหลดครบพร้อมทำงานแล้ว!")
+
 -- ฟังก์ชันกดปุ่มผ่านระบบ Selection
 local vu = game:GetService("VirtualUser")
 local Players = game:GetService("Players")
