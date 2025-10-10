@@ -15,6 +15,18 @@ local playerStats = Workspace:WaitForChild("PlayerStats")[playerName]
 local RemoteEvent = ReplicatedStorage:WaitForChild("packages"):WaitForChild("Net"):WaitForChild("RE/SpearFishing/Minigame")
 local SpearfishingFolder = Workspace:WaitForChild("Spearfishing Water")
 -- ฟังก์ชันกดปุ่มผ่านระบบ Selection
+local vu = game:GetService("VirtualUser")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+player.Idled:Connect(function()
+    vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    task.wait(1)
+    vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+end)
+
+print("✅ Anti-AFK Enabled (จะไม่หลุดออกจากเกมเมื่อ AFK)")
+
 local function interact(path)
 	if path then
 		GuiService.SelectedObject = path
