@@ -37,15 +37,15 @@ local SpearfishingFolder = Workspace["Spearfishing Water"]
 
 print("✅ ทุกอย่างโหลดครบพร้อมทำงานแล้ว!")
 
--- ฟังก์ชันกดปุ่มผ่านระบบ Selection
+-- ฟังก์ชันกันคิกเมื่อระบบ Idle (AFK)
 local vu = game:GetService("VirtualUser")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 player.Idled:Connect(function()
-    vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
     task.wait(1)
-    vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 end)
 
 print("✅ Anti-AFK Enabled (จะไม่หลุดออกจากเกมเมื่อ AFK)")
@@ -83,6 +83,23 @@ for _, settingName in ipairs(settingsToEnable) do
 	task.wait(0.5) -- กัน server overload หรือ anti-spam
 end
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remote = ReplicatedStorage:WaitForChild("packages"):WaitForChild("Net"):WaitForChild("RE/Settings/Update")
+
+-- 🔕 ปิดระบบข้อความ/ประกาศทั้งหมด
+local settingsToDisable = {
+    "announcestop",
+    "announcesbottom",
+    "chatothers",
+    "chatcatch",
+    "chatenchant",
+    "chatevent"
+}
+
+for _, settingName in ipairs(settingsToDisable) do
+    Remote:FireServer(settingName, false)
+    task.wait(0.5) -- เว้นเล็กน้อยกัน spam
+end
 
 lib = require(game:GetService("ReplicatedStorage").shared.modules.library)
 for i,v in pairs(lib.rods) do
@@ -266,6 +283,7 @@ task.spawn(function()
         end)
     end
 end)
+
 -- ✅ เริ่มระบบหลัก
 task.spawn(function()
     while task.wait(1) do
@@ -286,8 +304,11 @@ task.spawn(function()
                             for ii,vv in pairs(v:WaitForChild("Merlin"):GetChildren()) do
                                 if vv.Name == "luck" then
                                     task.spawn(function()
-                                        a = vv:InvokeServer(unpack(args))
-                                        print(a)
+                                        for i = 1, 10 do
+                                            local a = vv:InvokeServer(unpack(args))
+                                            print("ซื้อครั้งที่", i, "ผลลัพธ์:", a)
+                                            task.wait(0.1)
+                                        end
                                     end)
                                 end
                             end
@@ -459,7 +480,7 @@ end
 
 -- 🧩 ฟังก์ชันตรวจสอบว่าเราสามารถโยนเบ็ดได้ไหม
 local function canCast(rod)
-    return rod and not rod:FindFirstChild("bobber") and not PlayerGui:FindFirstChild("reel")
+    return rod and not rod:FindFirstChild("bobber") and not PlayerGui:FindFirstChild("reel") and not PlayerGui:FindFirstChild("shakeui")
 end
 
 -- 🚀 ฟังก์ชันโยนเบ็ด
