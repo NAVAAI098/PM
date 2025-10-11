@@ -37,6 +37,11 @@ local SpearfishingFolder = Workspace["Spearfishing Water"]
 
 print("✅ ทุกอย่างโหลดครบพร้อมทำงานแล้ว!")
 
+-- 🧩 เรียกใช้โมดูลตรวจปลาพิเศษ
+A = require(game:GetService("ReplicatedStorage").client.legacyControllers.DataController)
+B = require(game:GetService("ReplicatedStorage").shared.modules.library.fish)
+backpackUI = require(game:GetService("ReplicatedStorage").client.modules.ui.Backpack)
+
 -- ฟังก์ชันกันคิกเมื่อระบบ Idle (AFK)
 local vu = game:GetService("VirtualUser")
 local Players = game:GetService("Players")
@@ -284,42 +289,61 @@ task.spawn(function()
     end
 end)
 
--- ✅ เริ่มระบบหลัก
+local function getNumericValue()
+    local value = tostring(game:GetService("Players").LocalPlayer.leaderstats["C$"].Value)
+    local cleanValue = value:gsub(",", ""):gsub("C%$", "")
+    return tonumber(cleanValue)
+end
+
+-- ✅ ระบบซื้อ Luck
 task.spawn(function()
     while task.wait(1) do
         pcall(function()
-            if (not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") or (game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") and game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck").Visible == false)) and getNumericValue() > 5000 then
-                game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1215, 190, -1040)
-                for i,v in pairs(workspace:WaitForChild("world"):WaitForChild("npcs"):GetChildren()) do
-                    if v.Name == "Merlin" then
-                        local args = {
-                            {
-                                voice = 11,
-                                idle = v:WaitForChild("description"):WaitForChild("idle"),
-                                npc = v
+            local player = game:GetService("Players").LocalPlayer
+            local statuses = player.PlayerGui.hud.safezone.statuses
+            local statusLuck = statuses:FindFirstChild("status_luck")
+
+            -- ถ้า luck หายหรือซ่อนอยู่
+            if ((not statusLuck) or (not statusLuck.Visible)) and getNumericValue() > 5000 then
+                -- 🕒 ตรวจซ้ำหลัง 2 วินาที เพื่อกัน HUD รีโหลด
+                task.wait(2)
+                statusLuck = statuses:FindFirstChild("status_luck")
+                if (not statusLuck) or (not statusLuck.Visible) then
+                    _G.Config.Autofarm = false
+                    local hrp = player.Character:WaitForChild("HumanoidRootPart")
+                    hrp.CFrame = CFrame.new(-1215, 190, -1040)
+                    for i,v in pairs(workspace:WaitForChild("world"):WaitForChild("npcs"):GetChildren()) do
+                        if v.Name == "Merlin" then
+                            local args = {
+                                {
+                                    voice = 11,
+                                    idle = v:WaitForChild("description"):WaitForChild("idle"),
+                                    npc = v
+                                }
                             }
-                        }
-                        for ii,vv in pairs(v:WaitForChild("Merlin"):GetChildren()) do
-                            if vv.Name == "luck" then
-                                task.spawn(function()
-                                    for i = 1, 10 do
-                                        local a = vv:InvokeServer(unpack(args))
-                                        print("ซื้อครั้งที่", i, "ผลลัพธ์:", a)
-                                        task.wait(0.1)
-                                    end
-                                end)
+                            for ii,vv in pairs(v:WaitForChild("Merlin"):GetChildren()) do
+                                if vv.Name == "luck" then
+                                    task.spawn(function()
+                                        for i = 1, 10 do
+                                            local a = vv:InvokeServer(unpack(args))
+                                            print("ซื้อครั้งที่", i, "ผลลัพธ์:", a)
+                                            task.wait(0.1)
+                                        end
+                                    end)
+                                end
                             end
+                            break
                         end
-                        break
                     end
                 end
             else
-                wait(3)
+                task.wait(10)
                 _G.Config.Autofarm = true
             end
         end)
     end
 end)
+
 
 spawn(function()
     while task.wait(0.1) do
@@ -423,11 +447,6 @@ spawn(function()
 					hrp.CFrame = CFrame.new(-2895, 136, -2184)
 
 					task.wait(1)
-
-					-- 🧩 เรียกใช้โมดูลตรวจปลาพิเศษ
-					A = require(game:GetService("ReplicatedStorage").client.legacyControllers.DataController)
-					B = require(game:GetService("ReplicatedStorage").shared.modules.library.fish)
-					backpackUI = require(game:GetService("ReplicatedStorage").client.modules.ui.Backpack)
 
 					for i,v in pairs(A.fetch("Inventory")) do
 						pcall(function()
@@ -636,27 +655,38 @@ end)
 task.spawn(function()
 	while task.wait(1) do
 		pcall(function()
-            if rods:FindFirstChild("Aurora Rod").Value ~= "Hasty" and getNumericValue() > 110000 and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Enchant Relic") then
-                if not workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic") then
-                    _G.Config.Autofarm = false
-                    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1215, 195, -1040)
-                    local merlin = workspace.world.npcs.Merlin.Merlin
-                    local buy5Relics = merlin:FindFirstChild("buy10Relics")
+			local player = game:GetService("Players").LocalPlayer
+			local char = player.Character or player.CharacterAdded:Wait()
+			local backpack = player:WaitForChild("Backpack")
+			local rods = rods -- assume this defined globally
 
-                    if buy5Relics then
-                        buy5Relics:InvokeServer({
-                            {
-                                voice = 11,
-                                idle = workspace.world.npcs.Merlin.description.idle,
-                                npc = workspace.world.npcs.Merlin
-                            }
-                        })
-                    end
-                end
-            end
-        end)
-    end
+			-- เงื่อนไขตรวจสอบ
+			if rods:FindFirstChild("Aurora Rod") 
+				and rods["Aurora Rod"].Value ~= "Hasty"
+				and getNumericValue() > 110000
+				and not backpack:FindFirstChild("Enchant Relic")
+				and not char:FindFirstChild("Enchant Relic") then
+				
+				_G.Config.Autofarm = false
+				char:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-1215, 195, -1040)
+				
+				local merlin = workspace:WaitForChild("world").npcs.Merlin.Merlin
+				local buyRelics = merlin:FindFirstChild("buy10Relics")
+				
+				if buyRelics then
+					buyRelics:InvokeServer({
+						{
+							voice = 11,
+							idle = merlin.description.idle,
+							npc = merlin
+						}
+					})
+				end
+			end
+		end)
+	end
 end)
+
 
 task.spawn(function()
 	while task.wait(1) do
@@ -664,8 +694,7 @@ task.spawn(function()
             if rods:FindFirstChild("Great Rod of Oscar").Value ~= "Clever"
 	and game:GetService("ReplicatedStorage").world.cycle.Value == "Night"
 	and (game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Enchant Relic")
-	or workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic")) 
-then
+	or workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic")) then
                 _G.Config.Autofarm = false
                 _G.Config.Equip = false
                 if not game:GetService("Players").LocalPlayer.PlayerGui.over:FindFirstChild("prompt") then
@@ -684,8 +713,6 @@ then
                     end
                     task.wait(0.3)
                 elseif game:GetService("Players").LocalPlayer.PlayerGui.over:FindFirstChild("prompt") then
-                _G.Config.Equip = false
-                _G.Config.Autofarm = false
                 game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1311, -802, -83)
                 interact(game:GetService("Players").LocalPlayer.PlayerGui.over.prompt.confirm)
                 end
@@ -704,8 +731,7 @@ task.spawn(function()
             if rods:FindFirstChild("Aurora Rod").Value ~= "Hasty"
 	and game:GetService("ReplicatedStorage").world.cycle.Value == "Night"
 	and (game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Enchant Relic")
-	or workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic")) 
-then
+	or workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic")) then
                 _G.Config.Autofarm = false
                 _G.Config.Equip = false
                 if not game:GetService("Players").LocalPlayer.PlayerGui.over:FindFirstChild("prompt") then
@@ -724,8 +750,6 @@ then
                     end
                     task.wait(0.3)
                 elseif game:GetService("Players").LocalPlayer.PlayerGui.over:FindFirstChild("prompt") then
-                _G.Config.Equip = false
-                _G.Config.Autofarm = false
                 game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1311, -802, -83)
                 interact(game:GetService("Players").LocalPlayer.PlayerGui.over.prompt.confirm)
                 end
