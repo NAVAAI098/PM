@@ -288,7 +288,7 @@ end)
 task.spawn(function()
     while task.wait(1) do
         pcall(function()
-            if not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") and game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck").Visible == false then
+            if not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") or (game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") and game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck").Visible == false) then
                 if getNumericValue() > 5000 then
                     _G.Config.Autofarm = false
                     game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1215, 190, -1040)
