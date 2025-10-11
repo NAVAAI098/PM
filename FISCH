@@ -239,11 +239,11 @@ _G.Config = {
 
     RodPriority = {
         "Great Rod of Oscar",
-        "Great Dreamer Rod"
+        "Aurora Rod"
     },
 
     RodUpgradeList = {
-        { name = "Great Dreamer Rod", price = 500000 },
+        { name = "Aurora Rod", price = 90000 },
         { name = "Great Rod of Oscar", price = 5000000 }
     }
 }
@@ -336,7 +336,7 @@ spawn(function()
                 local spears = stats.T[playerName]:WaitForChild("Spears")
 
                 -- เช็คว่าผู้เล่นไม่มีทั้ง Rod และ Spear (หรือ Spear ยังอ่อน)
-                if not rods:FindFirstChild("Great Dreamer Rod") and spears:FindFirstChild("Flimsy Spear") then
+                if not rods:FindFirstChild("Aurora Rod") and spears:FindFirstChild("Flimsy Spear") then
                     _G.Config.Autofarm = false
                     local hrp = game:GetService("Players").LocalPlayer.Character:WaitForChild("HumanoidRootPart")
                     hrp.CFrame = CFrame.new(-2895, 136, -2184)
@@ -609,7 +609,72 @@ end)
 task.spawn(function()
 	while task.wait(1) do
 		pcall(function()
+            if rods:FindFirstChild("Aurora Rod").Value ~= "Hasty" and getNumericValue() > 110000 and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Enchant Relic") then
+                if not workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic") then
+                    _G.Config.Autofarm = false
+                    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1215, 195, -1040)
+                    local merlin = workspace.world.npcs.Merlin.Merlin
+                    local buy5Relics = merlin:FindFirstChild("buy10Relics")
+
+                    if buy5Relics then
+                        buy5Relics:InvokeServer({
+                            {
+                                voice = 11,
+                                idle = workspace.world.npcs.Merlin.description.idle,
+                                npc = workspace.world.npcs.Merlin
+                            }
+                        })
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+	while task.wait(1) do
+		pcall(function()
             if rods:FindFirstChild("Great Rod of Oscar").Value ~= "Clever"
+	and game:GetService("ReplicatedStorage").world.cycle.Value == "Night"
+	and (game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Enchant Relic")
+	or workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic")) 
+then
+                _G.Config.Autofarm = false
+                _G.Config.Equip = false
+                if not game:GetService("Players").LocalPlayer.PlayerGui.over:FindFirstChild("prompt") then
+                    local vim = game:GetService("VirtualInputManager")
+                    vim:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                    task.wait(0.05)
+                    vim:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1311, -802, -83)
+                    local player = game.Players.LocalPlayer
+                    local char = player.Character or player.CharacterAdded:Wait()
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    local tool = player.Backpack:FindFirstChild("Enchant Relic")
+
+                    if tool and humanoid then
+                        humanoid:EquipTool(tool)
+                    end
+                    task.wait(0.3)
+                elseif game:GetService("Players").LocalPlayer.PlayerGui.over:FindFirstChild("prompt") then
+                _G.Config.Equip = false
+                _G.Config.Autofarm = false
+                game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1311, -802, -83)
+                interact(game:GetService("Players").LocalPlayer.PlayerGui.over.prompt.confirm)
+                end
+            else
+                wait(10)
+                _G.Config.Autofarm = true
+                _G.Config.Equip = true
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+	while task.wait(1) do
+		pcall(function()
+            if rods:FindFirstChild("Aurora Rod").Value ~= "Hasty"
 	and game:GetService("ReplicatedStorage").world.cycle.Value == "Night"
 	and (game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Enchant Relic")
 	or workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name):FindFirstChild("Enchant Relic")) 
