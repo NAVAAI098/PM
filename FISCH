@@ -288,32 +288,29 @@ end)
 task.spawn(function()
     while task.wait(1) do
         pcall(function()
-            if not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") or (game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") and game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck").Visible == false) then
-                if getNumericValue() > 5000 then
-                    _G.Config.Autofarm = false
-                    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1215, 190, -1040)
-                    for i,v in pairs(workspace:WaitForChild("world"):WaitForChild("npcs"):GetChildren()) do
-                        if v.Name == "Merlin" then
-                            local args = {
-                                {
-                                    voice = 11,
-                                    idle = v:WaitForChild("description"):WaitForChild("idle"),
-                                    npc = v
-                                }
+            if (not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") or (game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck") and game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.statuses:FindFirstChild("status_luck").Visible == false)) and getNumericValue() > 5000 then
+                game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1215, 190, -1040)
+                for i,v in pairs(workspace:WaitForChild("world"):WaitForChild("npcs"):GetChildren()) do
+                    if v.Name == "Merlin" then
+                        local args = {
+                            {
+                                voice = 11,
+                                idle = v:WaitForChild("description"):WaitForChild("idle"),
+                                npc = v
                             }
-                            for ii,vv in pairs(v:WaitForChild("Merlin"):GetChildren()) do
-                                if vv.Name == "luck" then
-                                    task.spawn(function()
-                                        for i = 1, 10 do
-                                            local a = vv:InvokeServer(unpack(args))
-                                            print("ซื้อครั้งที่", i, "ผลลัพธ์:", a)
-                                            task.wait(0.1)
-                                        end
-                                    end)
-                                end
+                        }
+                        for ii,vv in pairs(v:WaitForChild("Merlin"):GetChildren()) do
+                            if vv.Name == "luck" then
+                                task.spawn(function()
+                                    for i = 1, 10 do
+                                        local a = vv:InvokeServer(unpack(args))
+                                        print("ซื้อครั้งที่", i, "ผลลัพธ์:", a)
+                                        task.wait(0.1)
+                                    end
+                                end)
                             end
-                            break
                         end
+                        break
                     end
                 end
             else
@@ -414,35 +411,65 @@ spawn(function()
 end)
 
 spawn(function()
-    while task.wait(1) do
-        pcall(function()
-            if _G.Config.Autosell then
-                local backpack = game:GetService("Players").LocalPlayer.Backpack
-                if #backpack:GetChildren() > 60 then
-                        _G.Config.Autofarm = false
-                        local hrp = game:GetService("Players").LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-                        hrp.CFrame = CFrame.new(-2895, 136, -2184)
-                        
-                        task.wait(1) -- รอให้ย้ายเสร็จ
-                        
-                        local args = {
-                            {
-                                voice = 12,
-                                idle = workspace.world.map["Lost Jungle"]["Merrick Merchant"].description.idle,
-                                npc = workspace.world.map["Lost Jungle"]["Merrick Merchant"]
-                            }
-                        }
-                        game:GetService("ReplicatedStorage").events.SellAll:InvokeServer(unpack(args))
-                        
-                        task.wait(3)
-                elseif #backpack:GetChildren() < 60 then
-                    wait(10)
-                    _G.Config.Autofarm = true
-                end
-            end
-        end)
-    end
+	while task.wait(1) do
+		pcall(function()
+			if _G.Config.Autosell then
+				backpack = game:GetService("Players").LocalPlayer.Backpack
+				if #backpack:GetChildren() > 60 then
+					_G.Config.Autofarm = false
+                    _G.Config.Equip = false
+					character = game:GetService("Players").LocalPlayer.Character or game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
+					hrp = character:WaitForChild("HumanoidRootPart")
+					hrp.CFrame = CFrame.new(-2895, 136, -2184)
+
+					task.wait(1)
+
+					-- 🧩 เรียกใช้โมดูลตรวจปลาพิเศษ
+					A = require(game:GetService("ReplicatedStorage").client.legacyControllers.DataController)
+					B = require(game:GetService("ReplicatedStorage").shared.modules.library.fish)
+					backpackUI = require(game:GetService("ReplicatedStorage").client.modules.ui.Backpack)
+
+					for i,v in pairs(A.fetch("Inventory")) do
+						pcall(function()
+							if B[v.name].Rarity and B[v.name].Rarity == "Special" then
+								print("[🎣 พบปลาพิเศษ]:", v.name)
+								game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2742, 160, -2075)
+								backpackUI.handleInput(i, "equip")
+								task.wait(0.1)
+								args = {
+									{
+										voice = 12,
+										idle = workspace.world.map["Lost Jungle"]["Merrick Merchant"].description.idle,
+										npc = workspace.world.map["Lost Jungle"]["Merrick Merchant"]
+									}
+								}
+								game:GetService("ReplicatedStorage").events.Sell:InvokeServer(unpack(args))
+							end
+						end)
+					end
+
+					-- 🪙 ขายของทั่วไปทั้งหมด
+					args = {
+						{
+							voice = 12,
+							idle = workspace.world.map["Lost Jungle"]["Merrick Merchant"].description.idle,
+							npc = workspace.world.map["Lost Jungle"]["Merrick Merchant"]
+						}
+					}
+					game:GetService("ReplicatedStorage").events.SellAll:InvokeServer(unpack(args))
+
+					task.wait(3)
+				elseif #backpack:GetChildren() < 60 then
+					task.wait(10)
+					_G.Config.Autofarm = true
+                    _G.Config.Equip = true
+				end
+			end
+		end)
+	end
 end)
+
+
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
